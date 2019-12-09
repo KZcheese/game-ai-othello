@@ -23,6 +23,7 @@ public class BoardScript : MonoBehaviour {
     BoardSpace[][] board;
     GameObject[][] boardGameObjects;
 
+    // It might be better to make this accessible by AIscript, but I'd rather not have to pass in a Boardscript every time.
     uint turnNumber; // Technically, this would be better named plyNumber, two plies per turn
     bool gameStarted;
     public bool gameEnded;
@@ -98,14 +99,12 @@ public class BoardScript : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        if (!gameEnded) {
-            if (turnNumber % 2 == 0) {
-                tText.text = "Current Turn: Black";
-            }
-            else {
-                tText.text = "Current Turn: White";
-            }
-            if (turnNumber % 2 == 0 && isPlayerOneAI) {
+        if (gameEnded) return;
+        
+        tText.text = turnNumber % 2 == 0 ? "Current Turn: Black" : "Current Turn: White";
+        
+        switch (turnNumber % 2) {
+            case 0 when isPlayerOneAI: {
                 KeyValuePair<int, int> move = playerOneScript.makeMove(currentValidMoves, board);
                 if (move.Key == -1) {
                     //No move, game over
@@ -113,8 +112,9 @@ public class BoardScript : MonoBehaviour {
                     return;
                 }
                 PlacePiece(move.Value, move.Key);
+                break;
             }
-            else if (turnNumber % 2 == 1 && isPlayerTwoAI) {
+            case 1 when isPlayerTwoAI: {
 //                KeyValuePair<int, int> move = playerTwoScript.StarterFunction(board, this, turnNumber);
                 KeyValuePair<int, int> move = playerTwoScript.makeMove(currentValidMoves, board);
                 if (move.Key == -1) {
@@ -123,8 +123,9 @@ public class BoardScript : MonoBehaviour {
                     return;
                 }
                 PlacePiece(move.Value, move.Key);
+                break;
             }
-            else {
+            default: {
                 if (currentValidMoves.Count == 0) {
                     //No move, game over
                     GameOver();
@@ -158,6 +159,8 @@ public class BoardScript : MonoBehaviour {
                         }
                     }
                 }
+
+                break;
             }
         }
     }
@@ -250,6 +253,8 @@ public class BoardScript : MonoBehaviour {
         ++turnNumber;
     }
 
+    // This should be static as the method's independent to gamestate and needs to be used by the AI scripts.
+    // By default it's not.
     public static List<KeyValuePair<int, int>> GetPointsChangedFromMove(BoardSpace[][] board, uint turnNumber, int x,
         int y) {
         //determines how much a move changed the overall point value
@@ -290,6 +295,8 @@ public class BoardScript : MonoBehaviour {
         return changedSpaces;
     }
 
+    // This should be static as the method's independent to gamestate and needs to be used by the AI scripts.
+    // By default it's not.
     public static List<KeyValuePair<int, int>> GetValidMoves(BoardSpace[][] board, uint turnNumber) {
         if (board.Length != 8 || board[0].Length != 8) {
             return null;
@@ -307,21 +314,21 @@ public class BoardScript : MonoBehaviour {
                         for (int l = -1; l < 2; ++l) {
                             if (!((k == 0 && l == 0) || k + i < 0 || k + i >= 8 || l + j < 0 || l + j >= 8) &&
                                 board[k + i][l + j] == enemyColor) {
-                                int multiplier = 2;
-                                while (k * multiplier + i >= 0 && k * multiplier + i < 8 && l * multiplier + j >= 0 &&
-                                       l * multiplier + j < 8) {
-                                    if (board[k * multiplier + i][l * multiplier + j] == BoardSpace.EMPTY) {
+                                int mult = 2;
+                                while (k * mult + i >= 0 && k * mult + i < 8 && l * mult + j >= 0 &&
+                                       l * mult + j < 8) {
+                                    if (board[k * mult + i][l * mult + j] == BoardSpace.EMPTY) {
                                         break;
                                     }
 
-                                    if (board[k * multiplier + i][l * multiplier + j] == ourColor) {
+                                    if (board[k * mult + i][l * mult + j] == ourColor) {
                                         possibleMoves.Add(new KeyValuePair<int, int>(i, j));
                                         k = 2;
                                         l = 2;
                                         break;
                                     }
 
-                                    ++multiplier;
+                                    ++mult;
                                 }
                             }
                         }
