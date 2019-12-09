@@ -5,6 +5,21 @@ using UnityEngine;
 public class NegamaxAI : AIScript {
     uint maxDepth = 4;
 
+    private float[,] spaceValues = {
+        // Corners are super valuable
+        // Spaces right next to corners are dangerous (see below)  
+        // Edges are pretty decent
+        // Rest get less valuable towards the center
+        {999,   0, 100, 100, 100, 100,   0, 999},
+        {  0,   0,   6,   6,   6,   6,   0,   0},
+        {100,   6,   2,   2,   2,   2,   6, 100},
+        {100,   6,   2,   1,   1,   2,   6, 100},
+        {100,   6,   2,   1,   1,   2,   6, 100},
+        {100,   6,   2,   2,   2,   2,   6, 100},
+        {  0,   0,   6,   6,   6,   6,   0,   0},
+        {999,   0, 100, 100, 100, 100,   0, 999}
+    };
+
     protected int countSpaces(BoardSpace[][] currentBoard, BoardSpace spaceType) {
         return currentBoard.SelectMany(row => row).Count(space => space.Equals(spaceType));
     }
@@ -13,34 +28,33 @@ public class NegamaxAI : AIScript {
         return oldBoard.Select(a => a.ToArray()).ToArray();
     }
 
-    private float boardValue(BoardSpace[][] currentBoard, uint turnNumber) {
+    protected float staticEvaluationFunction(BoardSpace[][] currentBoard, uint turnNumber) {
         float blackMod = turnNumber % 2 == 0 ? 1 : -1;
         float whiteMod = turnNumber % 2 == 1 ? 1 : -1;
-        float rawSpaces = countSpaces(currentBoard, BoardSpace.BLACK) * blackMod + 
-                          countSpaces(currentBoard, BoardSpace.WHITE) * whiteMod;
 
-        float corners = (currentBoard[0][0] == BoardSpace.BLACK ? 1.0f : 0.0f) * blackMod +
-                        (currentBoard[0][0] == BoardSpace.WHITE ? 1.0f : 0.0f) * whiteMod +
-                        (currentBoard[7][0] == BoardSpace.BLACK ? 1.0f : 0.0f) * blackMod +
-                        (currentBoard[7][0] == BoardSpace.WHITE ? 1.0f : 0.0f) * whiteMod +
-                        (currentBoard[0][7] == BoardSpace.BLACK ? 1.0f : 0.0f) * blackMod +
-                        (currentBoard[0][7] == BoardSpace.WHITE ? 1.0f : 0.0f) * whiteMod +
-                        (currentBoard[7][7] == BoardSpace.BLACK ? 1.0f : 0.0f) * blackMod +
-                        (currentBoard[7][7] == BoardSpace.WHITE ? 1.0f : 0.0f) * whiteMod;
+        float rawSpaces = 0.0f;
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                rawSpaces += (currentBoard[y][x] == BoardSpace.BLACK ? 1.0f : 0.0f) * blackMod * spaceValues[x,y];
+                rawSpaces += (currentBoard[y][x] == BoardSpace.WHITE ? 1.0f : 0.0f) * whiteMod * spaceValues[x,y];
+            }
+        }
+
+        float opponentMoves = BoardScript.GetValidMoves(currentBoard, turnNumber + 1).Count;
         
-        return rawSpaces * 1.0f + corners * 100.0f;
+        return rawSpaces * 1.0f + opponentMoves * -10.0f;
     } 
 
     //main recursive negamax function
     private KeyValuePair<float, KeyValuePair<int, int>>
         NegamaxFunction(BoardSpace[][] currentBoard, uint currentDepth) {
-        uint turnNumber = color.Equals(BoardSpace.BLACK) ? 0 : 1 + currentDepth;
+        uint turnNumber = (uint)currentBoard.Sum(row => row.Sum(tile => tile == BoardSpace.EMPTY ? 0 : 1));
         List<KeyValuePair<int, int>> currentValidMoves = BoardScript.GetValidMoves(currentBoard, turnNumber);
 
         //if game is over we are done recursing
         if (currentValidMoves.Count == 0 || currentDepth == maxDepth) {
             KeyValuePair<int, int> finalMove = new KeyValuePair<int, int>(-1, -1);
-            return new KeyValuePair<float, KeyValuePair<int, int>>(boardValue(currentBoard, turnNumber), finalMove);
+            return new KeyValuePair<float, KeyValuePair<int, int>>(staticEvaluationFunction(currentBoard, turnNumber), finalMove);
         }
 
         KeyValuePair<int, int> bestMove;
@@ -49,7 +63,7 @@ public class NegamaxAI : AIScript {
         //loop through all possible moves
         foreach (KeyValuePair<int, int> move in currentValidMoves) {
             BoardSpace[][] newBoard = copyBoard(currentBoard);
-            SimulateMove(ref newBoard, move.Key, move.Value, turnNumber);
+            SimulateMove(ref newBoard, move.Value, move.Key, turnNumber);
 
             //recurse
             KeyValuePair<float, KeyValuePair<int, int>> recursionResult = NegamaxFunction(newBoard, currentDepth + 1);

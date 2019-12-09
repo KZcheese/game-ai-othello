@@ -1,37 +1,20 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class NegamaxABAI : NegamaxAI {
     private const uint MaxDepth = 5;
 
-    private float boardValue(BoardSpace[][] currentBoard, uint turnNumber) {
-        float blackMod = turnNumber % 2 == 0 ? 1 : -1;
-        float whiteMod = turnNumber % 2 == 1 ? 1 : -1;
-        float rawSpaces = countSpaces(currentBoard, BoardSpace.BLACK) * blackMod + 
-                          countSpaces(currentBoard, BoardSpace.WHITE) * whiteMod;
-
-        float corners = (currentBoard[0][0] == BoardSpace.BLACK ? 1.0f : 0.0f) * blackMod +
-                        (currentBoard[0][0] == BoardSpace.WHITE ? 1.0f : 0.0f) * whiteMod +
-                        (currentBoard[7][0] == BoardSpace.BLACK ? 1.0f : 0.0f) * blackMod +
-                        (currentBoard[7][0] == BoardSpace.WHITE ? 1.0f : 0.0f) * whiteMod +
-                        (currentBoard[0][7] == BoardSpace.BLACK ? 1.0f : 0.0f) * blackMod +
-                        (currentBoard[0][7] == BoardSpace.WHITE ? 1.0f : 0.0f) * whiteMod +
-                        (currentBoard[7][7] == BoardSpace.BLACK ? 1.0f : 0.0f) * blackMod +
-                        (currentBoard[7][7] == BoardSpace.WHITE ? 1.0f : 0.0f) * whiteMod;
-        
-        return rawSpaces * 1.0f + corners * 100.0f;
-    } 
-
     //main recursive negamax function
     private KeyValuePair<float, KeyValuePair<int, int>>
         NegamaxABFunction(BoardSpace[][] currentBoard, uint currentDepth, float alpha, float beta) {
-        uint turnNumber = color.Equals(BoardSpace.BLACK) ? 0 : 1 + currentDepth;
+        uint turnNumber = (uint)currentBoard.Sum(row => row.Sum(tile => tile == BoardSpace.EMPTY ? 0 : 1));
         List<KeyValuePair<int, int>> currentValidMoves = BoardScript.GetValidMoves(currentBoard, turnNumber);
 
         //if game is over we are done recursing
         if (currentValidMoves.Count == 0 || currentDepth == MaxDepth) {
             KeyValuePair<int, int> finalMove = new KeyValuePair<int, int>(-1, -1);
-            return new KeyValuePair<float, KeyValuePair<int, int>>(boardValue(currentBoard, turnNumber), finalMove);
+            return new KeyValuePair<float, KeyValuePair<int, int>>(staticEvaluationFunction(currentBoard, turnNumber), finalMove);
         }
 
         KeyValuePair<int, int> bestMove;
@@ -40,7 +23,7 @@ public class NegamaxABAI : NegamaxAI {
         //loop through all possible moves
         foreach (KeyValuePair<int, int> move in currentValidMoves) {
             BoardSpace[][] newBoard = copyBoard(currentBoard);
-            SimulateMove(ref newBoard, move.Key, move.Value, turnNumber);
+            SimulateMove(ref newBoard, move.Value, move.Key, turnNumber);
 
             //recurse
             KeyValuePair<float, KeyValuePair<int, int>> recursionResult =
