@@ -19,6 +19,9 @@ public abstract class AIScript {
     public abstract KeyValuePair<int, int> makeMove(List<KeyValuePair<int, int>> availableMoves,
         BoardSpace[][] currentBoard);
 
+
+    public abstract KeyValuePair<int, int> StarterFunction(BoardSpace[][] currentBoard, BoardScript scriptReference, uint turnNum);
+
     /// <summary>
     /// Displays the piece on the board.
     /// </summary>

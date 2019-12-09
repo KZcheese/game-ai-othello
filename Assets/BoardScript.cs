@@ -24,9 +24,9 @@ public class BoardScript : MonoBehaviour {
 
     uint turnNumber; // Technically, this would be better named plyNumber, two plies per turn
     bool gameStarted;
-    bool gameEnded;
+    public bool gameEnded;
 
-    List<KeyValuePair<int, int>> currentValidMoves;
+    public List<KeyValuePair<int, int>> currentValidMoves;
 
     public bool isPlayerOneAI;
     public bool isPlayerTwoAI;
@@ -80,7 +80,7 @@ public class BoardScript : MonoBehaviour {
 
         if (isPlayerTwoAI) {
             //System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType(playerTwoScriptClassName);
-            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType("RandomAI");
+            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType("NegamaxAI");
             System.Object o = Activator.CreateInstance(scriptType);
             playerTwoScript = (AIScript) o;
             playerTwoScript.setColor(BoardSpace.WHITE);
@@ -109,6 +109,7 @@ public class BoardScript : MonoBehaviour {
                 PlacePiece(move.Value, move.Key);
             }
             else if (turnNumber % 2 == 1 && isPlayerTwoAI) {
+                //KeyValuePair<int, int> move = playerTwoScript.StarterFunction(board, this, turnNumber);
                 KeyValuePair<int, int> move = playerTwoScript.makeMove(currentValidMoves, board);
                 PlacePiece(move.Value, move.Key);
             }
@@ -203,6 +204,7 @@ public class BoardScript : MonoBehaviour {
             }
 
             currentValidMoves = GetValidMoves(board, turnNumber + 1);
+            foreach (KeyValuePair<int, int> move in currentValidMoves)
             if (currentValidMoves.Count == 0) {
                 ++turnNumber;
                 currentValidMoves = GetValidMoves(board, turnNumber + 1);
@@ -232,7 +234,7 @@ public class BoardScript : MonoBehaviour {
         ++turnNumber;
     }
 
-    public static List<KeyValuePair<int, int>> GetPointsChangedFromMove(BoardSpace[][] board, uint turnNumber, int x,
+    public List<KeyValuePair<int, int>> GetPointsChangedFromMove(BoardSpace[][] board, uint turnNumber, int x,
         int y) {
         //determines how much a move changed the overall point value
         BoardSpace enemyColor = turnNumber % 2 == 0 ? BoardSpace.WHITE : BoardSpace.BLACK;
@@ -271,7 +273,7 @@ public class BoardScript : MonoBehaviour {
         return changedSpaces;
     }
 
-    public static List<KeyValuePair<int, int>> GetValidMoves(BoardSpace[][] board, uint turnNumber) {
+    public List<KeyValuePair<int, int>> GetValidMoves(BoardSpace[][] board, uint turnNumber) {
         if (board.Length != 8 || board[0].Length != 8) {
             return null;
         }
@@ -309,11 +311,14 @@ public class BoardScript : MonoBehaviour {
                 }
             }
         }
-
+        //foreach(KeyValuePair<int, int> move in possibleMoves)
+        //{
+          //  print("possible move at: " + move.Key + "," + move.Value);
+        //}
         return possibleMoves;
     }
 
-    void GameOver() {
+    public void GameOver() {
         int blackCount = 0;
         int whiteCount = 0;
         foreach (BoardSpace[] row in board) {
