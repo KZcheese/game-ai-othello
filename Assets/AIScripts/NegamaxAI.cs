@@ -58,7 +58,7 @@ public class NegamaxAI : AIScript {
         }
 
         KeyValuePair<int, int> bestMove;
-        float bestScore = -1 * Mathf.Infinity;
+        float bestScore = Mathf.NegativeInfinity;
 
         //loop through all possible moves
         foreach (KeyValuePair<int, int> move in currentValidMoves) {
