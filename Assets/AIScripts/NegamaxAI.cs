@@ -4,13 +4,13 @@ using System.Linq;
 using UnityEngine;
 
 public class NegamaxAI : AIScript {
-    uint maxDepth = 3;
+    uint maxDepth = 4;
 
-    private int countSpaces(BoardSpace[][] currentBoard, BoardSpace spaceType) {
+    protected int countSpaces(BoardSpace[][] currentBoard, BoardSpace spaceType) {
         return currentBoard.SelectMany(row => row).Count(space => space.Equals(spaceType));
     }
 
-    private BoardSpace[][] copyBoard(BoardSpace[][] oldBoard) {
+    protected BoardSpace[][] copyBoard(BoardSpace[][] oldBoard) {
         return oldBoard.Select(a => a.ToArray()).ToArray();
     }
 
@@ -59,7 +59,7 @@ public class NegamaxAI : AIScript {
     }
 
 //from 
-    private void SimulateMove(ref BoardSpace[][] currentBoard, int x, int y, uint turnNumber) {
+    protected void SimulateMove(ref BoardSpace[][] currentBoard, int x, int y, uint turnNumber) {
         if (turnNumber % 2 == 0) {
             currentBoard[y][x] = BoardSpace.BLACK;
         }

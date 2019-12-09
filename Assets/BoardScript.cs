@@ -72,15 +72,16 @@ public class BoardScript : MonoBehaviour {
         possibleMovesArray = new List<GameObject>();
         if (isPlayerOneAI) {
 //            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType("RandomAI");
-            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType(playerOneScriptClassName);
+            System.Type scriptType =
+                System.Reflection.Assembly.GetExecutingAssembly().GetType(playerOneScriptClassName);
             System.Object o = Activator.CreateInstance(scriptType);
             playerOneScript = (AIScript) o;
             playerOneScript.setColor(BoardSpace.BLACK);
         }
 
         if (isPlayerTwoAI) {
-//            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType(playerTwoScriptClassName);
-            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType("NegamaxAI");
+            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType(playerTwoScriptClassName);
+//            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType("NegamaxAI");
             System.Object o = Activator.CreateInstance(scriptType);
             playerTwoScript = (AIScript) o;
             playerTwoScript.setColor(BoardSpace.WHITE);
@@ -109,7 +110,7 @@ public class BoardScript : MonoBehaviour {
                 PlacePiece(move.Value, move.Key);
             }
             else if (turnNumber % 2 == 1 && isPlayerTwoAI) {
-                //KeyValuePair<int, int> move = playerTwoScript.StarterFunction(board, this, turnNumber);
+//                KeyValuePair<int, int> move = playerTwoScript.StarterFunction(board, this, turnNumber);
                 KeyValuePair<int, int> move = playerTwoScript.makeMove(currentValidMoves, board);
                 PlacePiece(move.Value, move.Key);
             }
@@ -256,7 +257,7 @@ public class BoardScript : MonoBehaviour {
                         if (board[k * multiplier + y][l * multiplier + x] == BoardSpace.EMPTY) {
                             break;
                         }
-                        else if (board[k * multiplier + y][l * multiplier + x] == ourColor) {
+                        if (board[k * multiplier + y][l * multiplier + x] == ourColor) {
                             for (int i = multiplier - 1; i >= 1; --i) {
                                 changedSpaces.Add(new KeyValuePair<int, int>(k * i + y, l * i + x));
                             }
@@ -296,7 +297,7 @@ public class BoardScript : MonoBehaviour {
                                     if (board[k * multiplier + i][l * multiplier + j] == BoardSpace.EMPTY) {
                                         break;
                                     }
-                                    else if (board[k * multiplier + i][l * multiplier + j] == ourColor) {
+                                    if (board[k * multiplier + i][l * multiplier + j] == ourColor) {
                                         possibleMoves.Add(new KeyValuePair<int, int>(i, j));
                                         k = 2;
                                         l = 2;
