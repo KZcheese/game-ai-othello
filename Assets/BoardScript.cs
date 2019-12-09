@@ -108,11 +108,21 @@ public class BoardScript : MonoBehaviour {
 
             if (turnNumber % 2 == 0 && isPlayerOneAI) {
                 KeyValuePair<int, int> move = playerOneScript.makeMove(currentValidMoves, board);
+                if (move.Key == -1) {
+                    //No move, game over
+                    GameOver();
+                    return;
+                }
                 PlacePiece(move.Value, move.Key);
             }
             else if (turnNumber % 2 == 1 && isPlayerTwoAI) {
 //                KeyValuePair<int, int> move = playerTwoScript.StarterFunction(board, this, turnNumber);
                 KeyValuePair<int, int> move = playerTwoScript.makeMove(currentValidMoves, board);
+                if (move.Key == -1) {
+                    //No move, game over
+                    GameOver();
+                    return;
+                }
                 PlacePiece(move.Value, move.Key);
             }
             else {
