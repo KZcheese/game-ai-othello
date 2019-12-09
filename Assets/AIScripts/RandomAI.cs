@@ -11,6 +11,8 @@ public class RandomAI : AIScript {
     /// <returns></returns>
     public override KeyValuePair<int, int> makeMove(List<KeyValuePair<int, int>> availableMoves,
         BoardSpace[][] currentBoard) {
-        return availableMoves[Random.Range(0, availableMoves.Count)];
+        return availableMoves.Count == 0
+            ? new KeyValuePair<int, int>(-1, -1)
+            : availableMoves[Random.Range(0, availableMoves.Count)];
     }
 }
