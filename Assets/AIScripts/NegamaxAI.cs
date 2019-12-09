@@ -1,109 +1,83 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class NegamaxAI : AIScript {
+    uint maxDepth = 3;
 
-    BoardScript reversiScript;
-    int currentDepth = 0;
-    int maxDepth = 3;
-    uint turnNumber;
-    readonly KeyValuePair<float, KeyValuePair<int, int>> gameOverKeyValue;
-    int recursedScore = 0;
+    private int countSpaces(BoardSpace[][] currentBoard, BoardSpace spaceType) {
+        return currentBoard.SelectMany(row => row).Count(space => space.Equals(spaceType));
+    }
 
-    //starter function for Negamax function
-    public override KeyValuePair<int, int> StarterFunction(BoardSpace[][] currentBoard, BoardScript scriptReference, uint turnNum)
-    {
-        reversiScript = scriptReference;
-        turnNumber = turnNum;
-        return NegamaxFunction(currentBoard, 0).Value;
+    private BoardSpace[][] copyBoard(BoardSpace[][] oldBoard) {
+        return oldBoard.Select(a => a.ToArray()).ToArray();
     }
 
     //main recursive negamax function
-    public KeyValuePair<float, KeyValuePair<int, int>> NegamaxFunction(BoardSpace[][] currentBoard, int currentDepth)
-    {
-        List<KeyValuePair<int, int>> currentValidMoves = reversiScript.GetValidMoves(currentBoard, turnNumber);
+    private KeyValuePair<float, KeyValuePair<int, int>>
+        NegamaxFunction(BoardSpace[][] currentBoard, uint currentDepth) {
+        
+        uint turnNumber = color.Equals(BoardSpace.BLACK) ? 0 : 1 + currentDepth;
+        List<KeyValuePair<int, int>> currentValidMoves = BoardScript.GetValidMoves(currentBoard, turnNumber);
+
         //if game is over we are done recursing
-        if(currentValidMoves.Count == 0 || currentDepth == maxDepth)
-        {
-            int blackCount = 0;
-            int whiteCount = 0;
-            foreach (BoardSpace[] row in currentBoard)
-            {
-                foreach (BoardSpace space in row)
-                {
-                    switch (space)
-                    {
-                        case (BoardSpace.BLACK):
-                            blackCount++;
-                            break;
-                        case (BoardSpace.WHITE):
-                            whiteCount++;
-                            break;
-                    }
-                }
-            }
+        if (currentValidMoves.Count == 0 || currentDepth == maxDepth) {
+//            int blackCount = countSpaces(currentBoard, BoardSpace.BLACK);
+            int myCount = countSpaces(currentBoard, turnNumber % 2 == 0 ? BoardSpace.BLACK : BoardSpace.WHITE);
+
             KeyValuePair<int, int> finalMove = new KeyValuePair<int, int>(-1, -1);
-            KeyValuePair<float, KeyValuePair<int, int>> ret = new KeyValuePair<float, KeyValuePair<int, int>>(whiteCount, finalMove);
-            return ret;
+            return new KeyValuePair<float, KeyValuePair<int, int>>(1 * myCount, finalMove);
         }
 
         KeyValuePair<int, int> bestMove;
-        float bestScore = -Mathf.Infinity;
+        float bestScore = -1 * Mathf.Infinity;
 
         //loop through all possible moves
-        foreach (KeyValuePair<int, int> move in currentValidMoves)
-        {
-            BoardSpace[][] newBoard = currentBoard;
-            PlacePiece(ref newBoard, move.Key, move.Value);
+        foreach (KeyValuePair<int, int> move in currentValidMoves) {
+            BoardSpace[][] newBoard = copyBoard(currentBoard);
+            SimulateMove(ref newBoard, move.Key, move.Value, turnNumber);
 
             //recurse
             KeyValuePair<float, KeyValuePair<int, int>> recursionResult = NegamaxFunction(newBoard, currentDepth + 1);
 
-            float currentScore = -recursionResult.Key;
+            float currentScore = -1 * recursionResult.Key;
 
             //if you found a new better score update score and move
-            if(currentScore > bestScore)
-            {
+            if (currentScore > bestScore) {
                 bestScore = currentScore;
                 bestMove = move;
             }
         }
 
         return new KeyValuePair<float, KeyValuePair<int, int>>(bestScore, bestMove);
-
-
     }
 
     public override KeyValuePair<int, int> makeMove(List<KeyValuePair<int, int>> availableMoves,
-        BoardSpace[][] currentBoard)
-    {
-        return availableMoves[Random.Range(0, availableMoves.Count)];
+        BoardSpace[][] currentBoard) {
+        return NegamaxFunction(currentBoard, 0).Value;
     }
 
-    //from 
-    public void PlacePiece(ref BoardSpace[][] currentBoard, int x, int y)
-    {
-        if (turnNumber % 2 == 0)
-        {
+//from 
+    private void SimulateMove(ref BoardSpace[][] currentBoard, int x, int y, uint turnNumber) {
+        if (turnNumber % 2 == 0) {
             currentBoard[y][x] = BoardSpace.BLACK;
         }
-        else
-        {
+        else {
             currentBoard[y][x] = BoardSpace.WHITE;
         }
-        List<KeyValuePair<int, int>> changedSpaces = reversiScript.GetPointsChangedFromMove(currentBoard, turnNumber, x, y);
-        foreach (KeyValuePair<int, int> space in changedSpaces)
-        {
-            if (turnNumber % 2 == 0)
-            {
+
+        List<KeyValuePair<int, int>> changedSpaces =
+            BoardScript.GetPointsChangedFromMove(currentBoard, turnNumber, x, y);
+        foreach (KeyValuePair<int, int> space in changedSpaces) {
+            if (turnNumber % 2 == 0) {
                 currentBoard[space.Key][space.Value] = BoardSpace.BLACK;
             }
-            else
-            {
+            else {
                 currentBoard[space.Key][space.Value] = BoardSpace.WHITE;
             }
         }
+
         ++turnNumber;
     }
 }

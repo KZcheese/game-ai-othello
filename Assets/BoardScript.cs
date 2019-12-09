@@ -71,15 +71,15 @@ public class BoardScript : MonoBehaviour {
 
         possibleMovesArray = new List<GameObject>();
         if (isPlayerOneAI) {
-            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType("RandomAI");
-            //System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType(playerOneScriptClassName);
+//            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType("RandomAI");
+            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType(playerOneScriptClassName);
             System.Object o = Activator.CreateInstance(scriptType);
             playerOneScript = (AIScript) o;
             playerOneScript.setColor(BoardSpace.BLACK);
         }
 
         if (isPlayerTwoAI) {
-            //System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType(playerTwoScriptClassName);
+//            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType(playerTwoScriptClassName);
             System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType("NegamaxAI");
             System.Object o = Activator.CreateInstance(scriptType);
             playerTwoScript = (AIScript) o;
@@ -205,13 +205,13 @@ public class BoardScript : MonoBehaviour {
 
             currentValidMoves = GetValidMoves(board, turnNumber + 1);
             foreach (KeyValuePair<int, int> move in currentValidMoves)
-            if (currentValidMoves.Count == 0) {
-                ++turnNumber;
-                currentValidMoves = GetValidMoves(board, turnNumber + 1);
                 if (currentValidMoves.Count == 0) {
-                    GameOver();
+                    ++turnNumber;
+                    currentValidMoves = GetValidMoves(board, turnNumber + 1);
+                    if (currentValidMoves.Count == 0) {
+                        GameOver();
+                    }
                 }
-            }
         }
 
         int blackCount = 0;
@@ -234,7 +234,7 @@ public class BoardScript : MonoBehaviour {
         ++turnNumber;
     }
 
-    public List<KeyValuePair<int, int>> GetPointsChangedFromMove(BoardSpace[][] board, uint turnNumber, int x,
+    public static List<KeyValuePair<int, int>> GetPointsChangedFromMove(BoardSpace[][] board, uint turnNumber, int x,
         int y) {
         //determines how much a move changed the overall point value
         BoardSpace enemyColor = turnNumber % 2 == 0 ? BoardSpace.WHITE : BoardSpace.BLACK;
@@ -273,7 +273,7 @@ public class BoardScript : MonoBehaviour {
         return changedSpaces;
     }
 
-    public List<KeyValuePair<int, int>> GetValidMoves(BoardSpace[][] board, uint turnNumber) {
+    public static List<KeyValuePair<int, int>> GetValidMoves(BoardSpace[][] board, uint turnNumber) {
         if (board.Length != 8 || board[0].Length != 8) {
             return null;
         }
@@ -311,9 +311,10 @@ public class BoardScript : MonoBehaviour {
                 }
             }
         }
+
         //foreach(KeyValuePair<int, int> move in possibleMoves)
         //{
-          //  print("possible move at: " + move.Key + "," + move.Value);
+        //  print("possible move at: " + move.Key + "," + move.Value);
         //}
         return possibleMoves;
     }
