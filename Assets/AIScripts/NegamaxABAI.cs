@@ -4,6 +4,24 @@ using UnityEngine;
 public class NegamaxABAI : NegamaxAI {
     private const uint MaxDepth = 5;
 
+    private float boardValue(BoardSpace[][] currentBoard, uint turnNumber) {
+        float blackMod = turnNumber % 2 == 0 ? 1 : -1;
+        float whiteMod = turnNumber % 2 == 1 ? 1 : -1;
+        float rawSpaces = countSpaces(currentBoard, BoardSpace.BLACK) * blackMod + 
+                          countSpaces(currentBoard, BoardSpace.WHITE) * whiteMod;
+
+        float corners = (currentBoard[0][0] == BoardSpace.BLACK ? 1.0f : 0.0f) * blackMod +
+                        (currentBoard[0][0] == BoardSpace.WHITE ? 1.0f : 0.0f) * whiteMod +
+                        (currentBoard[7][0] == BoardSpace.BLACK ? 1.0f : 0.0f) * blackMod +
+                        (currentBoard[7][0] == BoardSpace.WHITE ? 1.0f : 0.0f) * whiteMod +
+                        (currentBoard[0][7] == BoardSpace.BLACK ? 1.0f : 0.0f) * blackMod +
+                        (currentBoard[0][7] == BoardSpace.WHITE ? 1.0f : 0.0f) * whiteMod +
+                        (currentBoard[7][7] == BoardSpace.BLACK ? 1.0f : 0.0f) * blackMod +
+                        (currentBoard[7][7] == BoardSpace.WHITE ? 1.0f : 0.0f) * whiteMod;
+        
+        return rawSpaces * 1.0f + corners * 100.0f;
+    } 
+
     //main recursive negamax function
     private KeyValuePair<float, KeyValuePair<int, int>>
         NegamaxABFunction(BoardSpace[][] currentBoard, uint currentDepth, float alpha, float beta) {
@@ -12,11 +30,8 @@ public class NegamaxABAI : NegamaxAI {
 
         //if game is over we are done recursing
         if (currentValidMoves.Count == 0 || currentDepth == MaxDepth) {
-//            int blackCount = countSpaces(currentBoard, BoardSpace.BLACK);
-            int myCount = countSpaces(currentBoard, turnNumber % 2 == 0 ? BoardSpace.BLACK : BoardSpace.WHITE);
-
             KeyValuePair<int, int> finalMove = new KeyValuePair<int, int>(-1, -1);
-            return new KeyValuePair<float, KeyValuePair<int, int>>(1 * myCount, finalMove);
+            return new KeyValuePair<float, KeyValuePair<int, int>>(boardValue(currentBoard, turnNumber), finalMove);
         }
 
         KeyValuePair<int, int> bestMove;
