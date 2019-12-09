@@ -60,8 +60,8 @@ public class BoardScript : MonoBehaviour {
          * to change who-plays-what and which AI to use to avoid having to change these manually.
          */
 
-        isPlayerOneAI = false;
-        isPlayerTwoAI = true;
+//        isPlayerOneAI = false;
+//        isPlayerTwoAI = true;
 
         /* For the calls to System.Reflection.Assembly.GetExecutingAssembly() below, enter the
          * string that names your .cs module that contains your AI code, such as is shown here
