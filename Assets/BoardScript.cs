@@ -105,7 +105,6 @@ public class BoardScript : MonoBehaviour {
             else {
                 tText.text = "Current Turn: White";
             }
-
             if (turnNumber % 2 == 0 && isPlayerOneAI) {
                 KeyValuePair<int, int> move = playerOneScript.makeMove(currentValidMoves, board);
                 if (move.Key == -1) {
@@ -126,6 +125,11 @@ public class BoardScript : MonoBehaviour {
                 PlacePiece(move.Value, move.Key);
             }
             else {
+                if (currentValidMoves.Count == 0) {
+                    //No move, game over
+                    GameOver();
+                    return;   
+                }
                 if (!posMovesShown) //shows potential moves for player character
                 {
                     foreach (KeyValuePair<int, int> a in currentValidMoves) {
