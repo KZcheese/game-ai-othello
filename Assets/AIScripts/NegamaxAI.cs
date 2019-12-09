@@ -13,7 +13,7 @@ public class NegamaxAI : AIScript {
         return oldBoard.Select(a => a.ToArray()).ToArray();
     }
 
-    private float boardValue(BoardSpace[][] currentBoard, uint turnNumber) {
+    protected float boardValue(BoardSpace[][] currentBoard, uint turnNumber) {
         float blackMod = turnNumber % 2 == 0 ? 1 : -1;
         float whiteMod = turnNumber % 2 == 1 ? 1 : -1;
         float rawSpaces = countSpaces(currentBoard, BoardSpace.BLACK) * blackMod + 
