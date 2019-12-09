@@ -1,9 +1,10 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
-using System;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using Object = System.Object;
 
 public enum BoardSpace {
     EMPTY,
@@ -72,17 +73,17 @@ public class BoardScript : MonoBehaviour {
         possibleMovesArray = new List<GameObject>();
         if (isPlayerOneAI) {
 //            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType("RandomAI");
-            System.Type scriptType =
-                System.Reflection.Assembly.GetExecutingAssembly().GetType(playerOneScriptClassName);
-            System.Object o = Activator.CreateInstance(scriptType);
+            Type scriptType =
+                Assembly.GetExecutingAssembly().GetType(playerOneScriptClassName);
+            Object o = Activator.CreateInstance(scriptType);
             playerOneScript = (AIScript) o;
             playerOneScript.setColor(BoardSpace.BLACK);
         }
 
         if (isPlayerTwoAI) {
-            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType(playerTwoScriptClassName);
+            Type scriptType = Assembly.GetExecutingAssembly().GetType(playerTwoScriptClassName);
 //            System.Type scriptType = System.Reflection.Assembly.GetExecutingAssembly().GetType("NegamaxAI");
-            System.Object o = Activator.CreateInstance(scriptType);
+            Object o = Activator.CreateInstance(scriptType);
             playerTwoScript = (AIScript) o;
             playerTwoScript.setColor(BoardSpace.WHITE);
         }
@@ -176,7 +177,7 @@ public class BoardScript : MonoBehaviour {
         SceneManager.LoadScene(0);
     }
 
-    public void PlacePiece(int x, int y) {
+    private void PlacePiece(int x, int y) {
         //instantiate piece at position and add to that side's points
         GameObject piece = Instantiate(piecePrefab, transform);
         SpriteRenderer spriteR = piece.GetComponent<SpriteRenderer>();
@@ -257,6 +258,7 @@ public class BoardScript : MonoBehaviour {
                         if (board[k * multiplier + y][l * multiplier + x] == BoardSpace.EMPTY) {
                             break;
                         }
+
                         if (board[k * multiplier + y][l * multiplier + x] == ourColor) {
                             for (int i = multiplier - 1; i >= 1; --i) {
                                 changedSpaces.Add(new KeyValuePair<int, int>(k * i + y, l * i + x));
@@ -297,6 +299,7 @@ public class BoardScript : MonoBehaviour {
                                     if (board[k * multiplier + i][l * multiplier + j] == BoardSpace.EMPTY) {
                                         break;
                                     }
+
                                     if (board[k * multiplier + i][l * multiplier + j] == ourColor) {
                                         possibleMoves.Add(new KeyValuePair<int, int>(i, j));
                                         k = 2;
@@ -320,7 +323,7 @@ public class BoardScript : MonoBehaviour {
         return possibleMoves;
     }
 
-    public void GameOver() {
+    private void GameOver() {
         int blackCount = 0;
         int whiteCount = 0;
         foreach (BoardSpace[] row in board) {

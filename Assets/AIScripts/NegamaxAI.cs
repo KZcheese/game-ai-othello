@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -17,7 +16,6 @@ public class NegamaxAI : AIScript {
     //main recursive negamax function
     private KeyValuePair<float, KeyValuePair<int, int>>
         NegamaxFunction(BoardSpace[][] currentBoard, uint currentDepth) {
-        
         uint turnNumber = color.Equals(BoardSpace.BLACK) ? 0 : 1 + currentDepth;
         List<KeyValuePair<int, int>> currentValidMoves = BoardScript.GetValidMoves(currentBoard, turnNumber);
 

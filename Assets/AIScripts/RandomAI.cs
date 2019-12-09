@@ -1,13 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using System;
-using UnityEngine.UI;
-using UnityEditor;
-using Random = UnityEngine.Random;
 
 public class RandomAI : AIScript {
-    
     /// <summary>
     /// This shows how to override the abstract definition of makeMove. All this one
     /// does is stupidly a random, yet legal, move.
